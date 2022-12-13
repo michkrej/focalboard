@@ -166,6 +166,7 @@ const CenterPanel = (props: Props) => {
     }, [props.showCard, selectedCardIds])
 
     const addCard = useCallback(async (groupByOptionId?: string, show = false, properties: Record<string, string> = {}): Promise<void> => {
+        // HERE IS ADD CARD FUNCTION
         const {activeView, board, groupByProperty} = props
 
         const card = createCard()
@@ -186,12 +187,44 @@ const CenterPanel = (props: Props) => {
         if (!card.fields.icon && UserSettings.prefillRandomIcons) {
             card.fields.icon = BlockIcons.shared.randomIcon()
         }
+
+        /*
+            mickr592
+            If I runt this outside like this it adds the card to the store but not to the db.
+            I need to figure out how to introduce a function that saves the card when changes have been made
+
+            What is the best logic for this, havinga field called 'edited' when creating a card and when
+            it is switched to true we save the card? Do we need a variable for this or can we call the
+            save card function (I need to write this) in the places where the card is updated
+
+                * Add title
+                * Added a property
+                * Added an icon
+                * Add a comment
+                * Add a description
+                    * Simply write directly in description
+                    * Click add content button and add an element
+        */
+
+        /* const block = card
+        if (show) {
+            dispatch(addCardAction(createCard(block)))
+            dispatch(updateView({...activeView, fields: {...activeView.fields, cardOrder: [...activeView.fields.cardOrder, block.id]}}))
+            showCard(block.id)
+        } else {
+            // Focus on this card's title inline on next render
+            setCardIdToFocusOnRender(block.id)
+            setTimeout(() => setCardIdToFocusOnRender(''), 100)
+        } */
+
+        // console.log(card)
         mutator.performAsUndoGroup(async () => {
             const newCard = await mutator.insertBlock(
                 card.boardId,
                 card,
                 'add card',
                 async (block: Block) => {
+                    // console.log(block)
                     if (show) {
                         dispatch(addCardAction(createCard(block)))
                         dispatch(updateView({...activeView, fields: {...activeView.fields, cardOrder: [...activeView.fields.cardOrder, block.id]}}))
@@ -212,6 +245,21 @@ const CenterPanel = (props: Props) => {
     }, [props.activeView, props.board.id, props.board.cardProperties, props.groupByProperty, showCard])
 
     const addEmptyCardAndShow = useCallback(() => addCard('', true), [addCard])
+
+    const saveCard = useCallback(async (card: Card): Promise<void> => {
+        const {activeView, board} = props
+
+        mutator.performAsUndoGroup(async () => {
+            const newCard = await mutator.insertBlock(
+                card.boardId,
+                card,
+                'add card',
+                undefined,
+            )
+            dispatch(showCardHiddenWarning(cardLimitTimestamp > 0))
+            await mutator.changeViewCardOrder(board.id, activeView.id, activeView.fields.cardOrder, [...activeView.fields.cardOrder, newCard.id], 'add-card')
+        })
+    }, [props.activeView, props.board.id, props.board.cardProperties, props.groupByProperty, showCard])
 
     const shouldStartBoardsTour = useCallback((): boolean => {
         const isOnboardingBoard = props.board.title === 'Welcome to Boards!'
@@ -293,6 +341,7 @@ const CenterPanel = (props: Props) => {
     }, [props.board, props.activeView, showCard])
 
     const addCardTemplate = useCallback(async () => {
+        // mickr592: How do we want to handle template cards?
         const {board, activeView} = props
 
         const cardTemplate = createCard()
@@ -434,6 +483,7 @@ const CenterPanel = (props: Props) => {
                 addCard={addCard}
                 addCardFromTemplate={addCardFromTemplate}
                 showCard={showCard}
+                saveCard={saveCard}
                 hiddenCardsCount={props.hiddenCardsCount}
                 showHiddenCardCountNotification={hiddenCardCountNotifyHandler}
             />}

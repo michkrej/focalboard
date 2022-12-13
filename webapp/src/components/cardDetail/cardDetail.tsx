@@ -22,7 +22,7 @@ import TelemetryClient, {TelemetryActions, TelemetryCategory} from '../../teleme
 import BlockIconSelector from '../blockIconSelector'
 
 import {useAppDispatch, useAppSelector} from '../../store/hooks'
-import {updateCards, setCurrent as setCurrentCard} from '../../store/cards'
+import {updateCards, setCurrent as setCurrentCard, setModified as setModifiedAction} from '../../store/cards'
 import {updateContents} from '../../store/contents'
 import {Permission} from '../../constants'
 import {useHasCurrentBoardPermissions} from '../../hooks/permissions'
@@ -146,6 +146,13 @@ const CardDetail = (props: Props): JSX.Element|null => {
         dispatch(setCurrentCard(card.id))
     }, [card.id])
 
+    const setModified = () => {
+        console.log('Setting modified')
+        if (!card.fields.modified) {
+            dispatch(setModifiedAction(card))
+        }
+    }
+
     if (!card) {
         return null
     }
@@ -187,7 +194,7 @@ const CardDetail = (props: Props): JSX.Element|null => {
             contentType: v?.type,
         }
     }), [props.contents])
-
+    console.log(card.fields.modified)
     return (
         <>
             <div className={`CardDetail content${limited ? ' is-limited' : ''}`}>
@@ -220,7 +227,10 @@ const CardDetail = (props: Props): JSX.Element|null => {
                     className='title'
                     value={title}
                     placeholderText='Untitled'
-                    onChange={(newTitle: string) => setTitle(newTitle)}
+                    onChange={(newTitle: string) => {
+                        setTitle(newTitle)
+                        setModified()
+                    }}
                     saveOnEsc={true}
                     onSave={saveTitle}
                     onCancel={() => setTitle(props.card.title)}
@@ -306,6 +316,7 @@ const CardDetail = (props: Props): JSX.Element|null => {
                         boardId={card.boardId}
                         blocks={blocks}
                         onBlockCreated={async (block: any, afterBlock: any): Promise<BlockData|null> => {
+                            setModified()
                             if (block.contentType === 'text' && block.value === '') {
                                 return null
                             }
@@ -321,6 +332,7 @@ const CardDetail = (props: Props): JSX.Element|null => {
                             return {...block, id: newBlock.id}
                         }}
                         onBlockModified={async (block: any): Promise<BlockData<any>|null> => {
+                            setModified()
                             const originalContentBlock = props.contents.flatMap((b) => b).find((b) => b.id === block.id)
                             if (!originalContentBlock) {
                                 return null
@@ -346,6 +358,7 @@ const CardDetail = (props: Props): JSX.Element|null => {
                         }}
                         onBlockMoved={async (block: BlockData, beforeBlock: BlockData|null, afterBlock: BlockData|null): Promise<void> => {
                             if (block.id) {
+                                setModified()
                                 const idx = card.fields.contentOrder.indexOf(block.id)
                                 let sourceBlockId: string
                                 let sourceWhere: 'after'|'before'
@@ -376,6 +389,7 @@ const CardDetail = (props: Props): JSX.Element|null => {
                             card={props.card}
                             contents={props.contents}
                             readonly={props.readonly || !canEditBoardCards}
+                            setModified={setModified}
                         />
                         {!props.readonly && canEditBoardCards && <CardDetailContentsMenu/>}
                     </CardDetailProvider>)}

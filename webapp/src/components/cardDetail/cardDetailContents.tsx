@@ -25,6 +25,7 @@ type Props = {
     card: Card
     contents: Array<ContentBlockType|ContentBlockType[]>
     readonly: boolean
+    setModified: () => void
 }
 
 async function addTextBlock(card: Card, intl: IntlShape, text: string): Promise<Block> {
@@ -89,6 +90,7 @@ type ContentBlockWithDragAndDropProps = {
     contents: Array<ContentBlockType|ContentBlockType[]>
     intl: IntlShape
     readonly: boolean
+    setModified: () => void
 }
 
 const ContentBlockWithDragAndDrop = (props: ContentBlockWithDragAndDropProps) => {
@@ -160,7 +162,7 @@ const ContentBlockWithDragAndDrop = (props: ContentBlockWithDragAndDropProps) =>
 
 const CardDetailContents = (props: Props) => {
     const intl = useIntl()
-    const {contents, card, id} = props
+    const {contents, card, id, setModified} = props
     if (contents.length) {
         return (
             <div className='octo-content'>
@@ -174,6 +176,7 @@ const CardDetailContents = (props: Props) => {
                                 contents={contents}
                                 intl={intl}
                                 readonly={props.readonly}
+                                setModified={setModified}
                             />
                             {x === 0 && <AddDescriptionTourStep/>}
                         </React.Fragment>
@@ -194,6 +197,7 @@ const CardDetailContents = (props: Props) => {
                         onBlur={(text) => {
                             if (text) {
                                 addTextBlock(card, intl, text)
+                                setModified()
                             }
                         }}
                     />
