@@ -3,8 +3,6 @@
 import React, {useEffect, useState} from 'react'
 import {FormattedMessage, useIntl} from 'react-intl'
 
-import {setModified} from '../../store/cards'
-
 import {Board, IPropertyTemplate} from '../../blocks/board'
 import {Card} from '../../blocks/card'
 import {BoardView} from '../../blocks/boardView'
@@ -25,7 +23,6 @@ import {Permission} from '../../constants'
 import {useHasCurrentBoardPermissions} from '../../hooks/permissions'
 import propRegistry from '../../properties'
 import {PropertyType} from '../../properties/types'
-import {useAppDispatch} from '../../store/hooks'
 
 type Props = {
     board: Board
@@ -34,23 +31,21 @@ type Props = {
     activeView: BoardView
     views: BoardView[]
     readonly: boolean
+    setModified: () => void
 }
 
 const CardDetailProperties = (props: Props) => {
-    const {board, card, cards, views, activeView} = props
+    const {board, card, cards, views, activeView, setModified} = props
     const [newTemplateId, setNewTemplateId] = useState('')
     const canEditBoardProperties = useHasCurrentBoardPermissions([Permission.ManageBoardProperties])
     const canEditBoardCards = useHasCurrentBoardPermissions([Permission.ManageBoardCards])
     const intl = useIntl()
-    const dispatch = useAppDispatch()
 
     useEffect(() => {
         const newProperty = board.cardProperties.find((property) => property.id === newTemplateId)
         if (newProperty) {
             setNewTemplateId('')
-            if (!card.fields.modified) {
-                dispatch(setModified(card))
-            }
+            setModified()
         }
     }, [newTemplateId, board.cardProperties])
 
@@ -59,7 +54,7 @@ const CardDetailProperties = (props: Props) => {
 
     function onPropertyChangeSetAndOpenConfirmationDialog(newType: PropertyType, newName: string, propertyTemplate: IPropertyTemplate) {
         const oldType = propRegistry.get(propertyTemplate.type)
-        dispatch(setModified(card))
+        setModified()
 
         // do nothing if no change
         if (oldType === newType && propertyTemplate.name === newName) {
@@ -134,7 +129,7 @@ const CardDetailProperties = (props: Props) => {
 
         // open confirmation dialog property delete
         setShowConfirmationDialog(true)
-        dispatch(setModified(card))
+        setModified()
     }
 
     return (
@@ -164,6 +159,7 @@ const CardDetailProperties = (props: Props) => {
                             board={board}
                             propertyTemplate={propertyTemplate}
                             showEmptyPlaceholder={true}
+                            setModified={props.setModified}
                         />
                     </div>
                 )
@@ -188,6 +184,7 @@ const CardDetailProperties = (props: Props) => {
                             <PropertyTypes
                                 label={intl.formatMessage({id: 'PropertyMenu.selectType', defaultMessage: 'Select property type'})}
                                 onTypeSelected={async (type) => {
+                                    setModified()
                                     const template: IPropertyTemplate = {
                                         id: Utils.createGuid(IDType.BlockID),
                                         name: type.displayName(intl),

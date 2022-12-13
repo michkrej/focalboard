@@ -4,6 +4,7 @@
 import React, {useCallback, useState, useRef, useEffect} from 'react'
 
 import {useIntl} from 'react-intl'
+import {setModified} from 'store/cards'
 
 import mutator from '../mutator'
 import Editable from '../widgets/editable'
@@ -43,7 +44,10 @@ const BaseTextEditor = (props: PropertyProps & {validator: () => boolean, spellC
                 placeholderText={emptyDisplayValue}
                 value={value.toString()}
                 autoExpand={true}
-                onChange={setValue}
+                onChange={(val) => {
+                    setValue(val)
+                    props.setModified()
+                }}
                 onSave={saveTextProperty}
                 onCancel={onCancel}
                 validator={props.validator}

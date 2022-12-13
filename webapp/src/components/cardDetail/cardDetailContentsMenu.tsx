@@ -13,7 +13,7 @@ import {contentRegistry} from '../content/contentRegistry'
 
 import {useCardDetailContext} from './cardDetailContext'
 
-function addContentMenu(intl: IntlShape, type: BlockTypes): JSX.Element {
+function addContentMenu(intl: IntlShape, type: BlockTypes, setModified: () => void): JSX.Element {
     const handler = contentRegistry.getHandler(type)
     if (!handler) {
         Utils.logError(`addContentMenu, unknown content type: ${type}`)
@@ -24,6 +24,7 @@ function addContentMenu(intl: IntlShape, type: BlockTypes): JSX.Element {
         const {card} = cardDetail
         const index = card.fields.contentOrder.length
         cardDetail.addBlock(handler, index, false)
+        setModified()
     }, [cardDetail, handler])
 
     return (
@@ -37,7 +38,8 @@ function addContentMenu(intl: IntlShape, type: BlockTypes): JSX.Element {
     )
 }
 
-const CardDetailContentsMenu = () => {
+const CardDetailContentsMenu = (props: {setModified: () => void}) => {
+    const {setModified} = props
     const intl = useIntl()
     return (
         <div className='CardDetailContentsMenu content add-content'>
@@ -49,7 +51,7 @@ const CardDetailContentsMenu = () => {
                     />
                 </Button>
                 <Menu position='top'>
-                    {contentRegistry.contentTypes.map((type) => addContentMenu(intl, type))}
+                    {contentRegistry.contentTypes.map((type) => addContentMenu(intl, type, setModified))}
                 </Menu>
             </MenuWrapper>
         </div>

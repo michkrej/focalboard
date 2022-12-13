@@ -293,6 +293,7 @@ const CardDetail = (props: Props): JSX.Element|null => {
                     activeView={props.activeView}
                     views={props.views}
                     readonly={props.readonly}
+                    setModified={props.setModified}
                 />}
 
                 {/* Comments */}
@@ -391,7 +392,7 @@ const CardDetail = (props: Props): JSX.Element|null => {
                             readonly={props.readonly || !canEditBoardCards}
                             setModified={setModified}
                         />
-                        {!props.readonly && canEditBoardCards && <CardDetailContentsMenu/>}
+                        {!props.readonly && canEditBoardCards && <CardDetailContentsMenu setModified={setModified}/>}
                     </CardDetailProvider>)}
             </div>}
         </>

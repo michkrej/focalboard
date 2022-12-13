@@ -14,12 +14,17 @@ type Props = {
     card: Card
     propertyTemplate: IPropertyTemplate
     showEmptyPlaceholder: boolean
+    setModified: () => void
 }
 
 const PropertyValueElement = (props: Props): JSX.Element => {
     const {card, propertyTemplate, readOnly, showEmptyPlaceholder, board} = props
 
     let propertyValue = card.fields.properties[propertyTemplate.id]
+    useEffect(() => {
+        console.log('Changed property value:', propertyValue)
+    }, [propertyValue])
+
     if (propertyValue === undefined) {
         propertyValue = ''
     }
@@ -34,6 +39,7 @@ const PropertyValueElement = (props: Props): JSX.Element => {
             showEmptyPlaceholder={showEmptyPlaceholder}
             propertyTemplate={propertyTemplate}
             propertyValue={propertyValue}
+            setModified={props.setModified}
         />
     )
 }

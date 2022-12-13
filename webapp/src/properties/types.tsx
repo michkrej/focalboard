@@ -30,6 +30,7 @@ export type PropertyProps = {
     propertyValue: string | string[]
     propertyTemplate: IPropertyTemplate
     showEmptyPlaceholder: boolean
+    setModified: () => void
 }
 
 export abstract class PropertyType {
