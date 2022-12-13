@@ -116,7 +116,10 @@ const ContentBlockWithDragAndDrop = (props: ContentBlockWithDragAndDropProps) =>
                             card={props.card}
                             readonly={props.readonly}
                             width={(1 / (props.block as ContentBlockType[]).length) * 100}
-                            onDrop={(src, dst, moveTo) => moveBlock(props.card, src, dst, props.intl, moveTo)}
+                            onDrop={(src, dst, moveTo) => {
+                                moveBlock(props.card, src, dst, props.intl, moveTo)
+                                props.setModified()
+                            }}
                             cords={{x: props.x, y}}
                         />
                     ))}
@@ -145,7 +148,10 @@ const ContentBlockWithDragAndDrop = (props: ContentBlockWithDragAndDropProps) =>
                 block={props.block}
                 card={props.card}
                 readonly={props.readonly}
-                onDrop={(src, dst, moveTo) => moveBlock(props.card, src, dst, props.intl, moveTo)}
+                onDrop={(src, dst, moveTo) => {
+                    moveBlock(props.card, src, dst, props.intl, moveTo)
+                    props.setModified()
+                }}
                 cords={{x: props.x}}
             />
             {props.x === props.contents.length - 1 && (

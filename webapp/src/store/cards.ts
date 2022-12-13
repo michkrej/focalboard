@@ -115,6 +115,9 @@ const cardsSlice = createSlice({
                 },
             }
         },
+        removeCard: (state: CardsState, action: PayloadAction<string>) => {
+            delete state.cards[action.payload]
+        },
     },
     extraReducers: (builder) => {
         builder.addCase(refreshCards.fulfilled, (state, action) => {
@@ -150,7 +153,7 @@ const cardsSlice = createSlice({
     },
 })
 
-export const {updateCards, addCard, addTemplate, setCurrent, setLimitTimestamp, showCardHiddenWarning, setModified} = cardsSlice.actions
+export const {updateCards, addCard, addTemplate, setCurrent, setLimitTimestamp, showCardHiddenWarning, setModified, removeCard} = cardsSlice.actions
 export const {reducer} = cardsSlice
 
 export const getCards = (state: RootState): {[key: string]: Card} => state.cards.cards

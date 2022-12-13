@@ -116,6 +116,13 @@ const CardDetail = (props: Props): JSX.Element|null => {
 
     useImagePaste(props.board.id, card.id, card.fields.contentOrder)
 
+    const dispatch = useAppDispatch()
+    const setModified = () => {
+        if (card.fields.modified === false) {
+            dispatch(setModifiedAction(card))
+        }
+    }
+
     useEffect(() => {
         if (!title) {
             setTimeout(() => titleRef.current?.focus(), 300)
@@ -128,6 +135,7 @@ const CardDetail = (props: Props): JSX.Element|null => {
             setTitle(card.title)
         }
         setServerTitle(card.title)
+        setModified()
     }, [card.title, title])
 
     useEffect(() => {
@@ -139,19 +147,12 @@ const CardDetail = (props: Props): JSX.Element|null => {
     const setRandomIcon = useCallback(() => {
         const newIcon = BlockIcons.shared.randomIcon()
         mutator.changeBlockIcon(props.board.id, card.id, card.fields.icon, newIcon)
+        setModified()
     }, [card.id, card.fields.icon])
 
-    const dispatch = useAppDispatch()
     useEffect(() => {
         dispatch(setCurrentCard(card.id))
     }, [card.id])
-
-    const setModified = () => {
-        console.log('Setting modified')
-        if (!card.fields.modified) {
-            dispatch(setModifiedAction(card))
-        }
-    }
 
     if (!card) {
         return null
@@ -194,7 +195,7 @@ const CardDetail = (props: Props): JSX.Element|null => {
             contentType: v?.type,
         }
     }), [props.contents])
-    console.log(card.fields.modified)
+
     return (
         <>
             <div className={`CardDetail content${limited ? ' is-limited' : ''}`}>
@@ -293,7 +294,7 @@ const CardDetail = (props: Props): JSX.Element|null => {
                     activeView={props.activeView}
                     views={props.views}
                     readonly={props.readonly}
-                    setModified={props.setModified}
+                    setModified={setModified}
                 />}
 
                 {/* Comments */}

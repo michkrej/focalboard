@@ -16,7 +16,7 @@ import {CardFilter} from '../cardFilter'
 import mutator from '../mutator'
 import {Utils} from '../utils'
 import {UserSettings} from '../userSettings'
-import {getCurrentCard, addCard as addCardAction, addTemplate as addTemplateAction, showCardHiddenWarning} from '../store/cards'
+import {getCurrentCard, addCard as addCardAction, addTemplate as addTemplateAction, showCardHiddenWarning, removeCard} from '../store/cards'
 import {getCardLimitTimestamp} from '../store/limits'
 import {updateView} from '../store/views'
 import {getVisibleAndHiddenGroups} from '../boardUtils'
@@ -57,6 +57,8 @@ import CardLimitNotification from './cardLimitNotification'
 import Gallery from './gallery/gallery'
 import {BoardTourSteps, FINISHED, TOUR_BOARD, TOUR_CARD} from './onboardingTour'
 import ShareBoardTourStep from './onboardingTour/shareBoard/shareBoard'
+
+import {keyboard} from '@testing-library/user-event/dist/keyboard'
 
 type Props = {
     clientConfig?: ClientConfig
@@ -166,7 +168,6 @@ const CenterPanel = (props: Props) => {
     }, [props.showCard, selectedCardIds])
 
     const addCard = useCallback(async (groupByOptionId?: string, show = false, properties: Record<string, string> = {}): Promise<void> => {
-        // HERE IS ADD CARD FUNCTION
         const {activeView, board, groupByProperty} = props
 
         const card = createCard()
@@ -206,19 +207,20 @@ const CenterPanel = (props: Props) => {
                     * Click add content button and add an element
         */
 
-        /* const block = card
+        const block = card
         if (show) {
             dispatch(addCardAction(createCard(block)))
-            dispatch(updateView({...activeView, fields: {...activeView.fields, cardOrder: [...activeView.fields.cardOrder, block.id]}}))
+
+            // dispatch(updateView({...activeView, fields: {...activeView.fields, cardOrder: [...activeView.fields.cardOrder, block.id]}}))
             showCard(block.id)
         } else {
             // Focus on this card's title inline on next render
             setCardIdToFocusOnRender(block.id)
             setTimeout(() => setCardIdToFocusOnRender(''), 100)
-        } */
+        }
 
         // console.log(card)
-        mutator.performAsUndoGroup(async () => {
+        /* mutator.performAsUndoGroup(async () => {
             const newCard = await mutator.insertBlock(
                 card.boardId,
                 card,
@@ -241,14 +243,14 @@ const CenterPanel = (props: Props) => {
             )
             dispatch(showCardHiddenWarning(cardLimitTimestamp > 0))
             await mutator.changeViewCardOrder(board.id, activeView.id, activeView.fields.cardOrder, [...activeView.fields.cardOrder, newCard.id], 'add-card')
-        })
+        }) */
     }, [props.activeView, props.board.id, props.board.cardProperties, props.groupByProperty, showCard])
 
     const addEmptyCardAndShow = useCallback(() => addCard('', true), [addCard])
 
     const saveCard = useCallback(async (card: Card): Promise<void> => {
+        const {modified, restFields} = card.fields
         const {activeView, board} = props
-
         mutator.performAsUndoGroup(async () => {
             const newCard = await mutator.insertBlock(
                 card.boardId,
@@ -341,7 +343,6 @@ const CenterPanel = (props: Props) => {
     }, [props.board, props.activeView, showCard])
 
     const addCardTemplate = useCallback(async () => {
-        // mickr592: How do we want to handle template cards?
         const {board, activeView} = props
 
         const cardTemplate = createCard()
@@ -428,7 +429,15 @@ const CenterPanel = (props: Props) => {
                         cards={cards}
                         key={props.shownCardId}
                         cardId={props.shownCardId}
-                        onClose={() => showCard(undefined)}
+                        onClose={() => {
+                            showCard(undefined)
+                            if (currentCard.fields.modified && currentCard.modifiedBy === '') {
+                                console.log('Save card')
+                                const card = currentCard
+                                dispatch(removeCard(currentCard.id))
+                                saveCard(card)
+                            }
+                        }}
                         showCard={(cardId) => showCard(cardId)}
                         readonly={props.readonly}
                     />
@@ -483,7 +492,6 @@ const CenterPanel = (props: Props) => {
                 addCard={addCard}
                 addCardFromTemplate={addCardFromTemplate}
                 showCard={showCard}
-                saveCard={saveCard}
                 hiddenCardsCount={props.hiddenCardsCount}
                 showHiddenCardCountNotification={hiddenCardCountNotifyHandler}
             />}

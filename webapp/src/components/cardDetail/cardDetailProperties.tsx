@@ -159,7 +159,6 @@ const CardDetailProperties = (props: Props) => {
                             board={board}
                             propertyTemplate={propertyTemplate}
                             showEmptyPlaceholder={true}
-                            setModified={props.setModified}
                         />
                     </div>
                 )

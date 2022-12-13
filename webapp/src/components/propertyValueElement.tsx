@@ -1,10 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react'
+import React, {useEffect} from 'react'
 
+import {useAppDispatch} from '../store/hooks'
 import {Board, IPropertyTemplate} from '../blocks/board'
 import {Card} from '../blocks/card'
+
+import {setModified as setModifiedAction} from '../store/cards'
 
 import propsRegistry from '../properties'
 
@@ -14,11 +17,17 @@ type Props = {
     card: Card
     propertyTemplate: IPropertyTemplate
     showEmptyPlaceholder: boolean
-    setModified: () => void
 }
 
 const PropertyValueElement = (props: Props): JSX.Element => {
     const {card, propertyTemplate, readOnly, showEmptyPlaceholder, board} = props
+
+    const dispatch = useAppDispatch()
+    const setModified = () => {
+        if (card.fields.modified === false) {
+            dispatch(setModifiedAction(card))
+        }
+    }
 
     let propertyValue = card.fields.properties[propertyTemplate.id]
     useEffect(() => {
@@ -39,7 +48,7 @@ const PropertyValueElement = (props: Props): JSX.Element => {
             showEmptyPlaceholder={showEmptyPlaceholder}
             propertyTemplate={propertyTemplate}
             propertyValue={propertyValue}
-            setModified={props.setModified}
+            setModified={setModified}
         />
     )
 }
